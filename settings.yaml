@@ -1,0 +1,16 @@
+ground_truth:
+  - file_gt.bt
+
+maps:
+  - default
+  - mymethod
+
+default:
+  - default_map1.bt
+  - default_map2.bt
+
+mymethod:
+  - mymethod_map1.bt
+  - mymethod_map2.bt
+  - mymethod_map3.bt
+    

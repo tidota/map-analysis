@@ -6,6 +6,8 @@
 #include <iostream>
 #include <iomanip>
 
+#include <yaml-cpp/yaml.h>
+
 #include <octomap/octomap.h>
 #include <octomap/OcTree.h>
 
@@ -19,6 +21,21 @@ void print_query_info(octomap::point3d query, octomap::OcTreeNode* node)
 
 int main(int argc, char** argv )
 {
+    std::ifstream fin("settings.yaml");
+    YAML::Node doc = YAML::Load(fin);
+
+    std::cout << "ground_truth: " << doc["ground_truth"] << std::endl;
+    for (int i = 0; i < doc["ground_truth"].size(); ++i)
+        std::cout << doc["ground_truth"][i] << std::endl;
+    std::cout << "maps: " << doc["maps"] << std::endl;
+    for (int i = 0; i < doc["maps"].size(); ++i)
+        std::cout << doc["maps"][i] << std::endl;
+    std::cout << "default: " << doc["default"] << std::endl;
+    for (int i = 0; i < doc["default"].size(); ++i)
+        std::cout << doc["default"][i] << std::endl;
+    std::cout << "mymethod: " << doc["mymethod"] << std::endl;
+    for (int i = 0; i < doc["mymethod"].size(); ++i)
+        std::cout << doc["mymethod"][i] << std::endl;
 
     octomap::OcTree *map;
 
