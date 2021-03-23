@@ -23,18 +23,18 @@ int main(int argc, char** argv )
   std::ifstream fin("settings.yaml");
   YAML::Node doc = YAML::Load(fin);
 
-  std::vector< std::shared_ptr<octomap::OcTree> > files_ground_truth;
+  std::vector< std::shared_ptr<octomap::OcTree> > submaps_ground_truth;
   std::cout << "======================================" << std::endl;
   std::cout << "ground_truth:" << std::endl;
   for (int i = 0; i < doc["ground_truth"].size(); ++i)
   {
     std::string file_name = doc["ground_truth"][i].as<std::string>();
     std::cout << "opening: " << file_name << std::endl;
-    files_ground_truth.push_back(std::make_shared<octomap::OcTree>(file_name));
+    submaps_ground_truth.push_back(std::make_shared<octomap::OcTree>(file_name));
   }
 
   std::map<std::string,
-           std::vector< std::shared_ptr<octomap::OcTree> > > map2files;
+           std::vector< std::shared_ptr<octomap::OcTree> > > map2submaps;
   for (int i = 0; i < doc["maps"].size(); ++i)
   {
     std::cout << "======================================" << std::endl;
@@ -44,13 +44,50 @@ int main(int argc, char** argv )
     {
       std::string file_name = doc[map_name][j].as<std::string>();
       std::cout << "opening: " << file_name << std::endl;
-      std::vector< std::shared_ptr<octomap::OcTree> > files;
-      files.push_back(std::make_shared<octomap::OcTree>(file_name));
-      map2files[map_name] = std::move(files);
+      std::vector< std::shared_ptr<octomap::OcTree> > submaps;
+      submaps.push_back(std::make_shared<octomap::OcTree>(file_name));
+      map2submaps[map_name] = std::move(submaps);
     }
   }
   std::cout << "======================================" << std::endl;
 
+  std::cout << "combining submaps into a ground truth map" << std::endl;
+  double resol = submaps_ground_truth[0]->getResolution();
+  double probHit = submaps_ground_truth[0]->getProbHit();
+  double probMiss = submaps_ground_truth[0]->getProbMiss();
+  std::shared_ptr<octomap::OcTree> map
+    = std::make_shared<octomap::OcTree>(resol);
+
+  for (auto m: submaps_ground_truth)
+  {
+    double minx, miny, minz;
+    m->getMetricMin(minx, miny, minz);
+    double maxx, maxy, maxz;
+    m->getMetricMax(maxx, maxy, maxz);
+
+    for (double x = minx; x <= maxx + resol; x += resol)
+    {
+      for (double y = miny; y <= maxx + resol; y += resol)
+      {
+        for (double z = minz; z <= maxz + resol; z += resol)
+        {
+          octomap::point3d query = octomap::point3d(x, y, z);
+          octomap::OcTreeNode* result = map->search(query);
+          if (result)
+          {
+            double occupancy = result->getOccupancy();
+            octomap::point3d endpoint((float) x, (float) y, (float) z);
+            if (occupancy == probHit)
+              map->updateNode(endpoint, true);
+            else if (occupancy == probMiss)
+              map->updateNode(endpoint, false);
+          }
+        }
+      }
+    }
+  }
+
+  std::cout << "======================================" << std::endl;
   // octomap::OcTree *map;
   //
   // map = new octomap::OcTree(0.1);
