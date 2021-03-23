@@ -55,32 +55,34 @@ int main(int argc, char** argv )
   double resol = submaps_ground_truth[0]->getResolution();
   double probHit = submaps_ground_truth[0]->getProbHit();
   double probMiss = submaps_ground_truth[0]->getProbMiss();
-  std::shared_ptr<octomap::OcTree> map
-    = std::make_shared<octomap::OcTree>(resol);
-
-  for (auto m: submaps_ground_truth)
   {
-    double minx, miny, minz;
-    m->getMetricMin(minx, miny, minz);
-    double maxx, maxy, maxz;
-    m->getMetricMax(maxx, maxy, maxz);
+    std::shared_ptr<octomap::OcTree> map
+      = std::make_shared<octomap::OcTree>(resol);
 
-    for (double x = minx; x <= maxx + resol; x += resol)
+    for (auto m: submaps_ground_truth)
     {
-      for (double y = miny; y <= maxx + resol; y += resol)
+      double minx, miny, minz;
+      m->getMetricMin(minx, miny, minz);
+      double maxx, maxy, maxz;
+      m->getMetricMax(maxx, maxy, maxz);
+
+      for (double x = minx; x <= maxx + resol; x += resol)
       {
-        for (double z = minz; z <= maxz + resol; z += resol)
+        for (double y = miny; y <= maxx + resol; y += resol)
         {
-          octomap::point3d query = octomap::point3d(x, y, z);
-          octomap::OcTreeNode* result = map->search(query);
-          if (result)
+          for (double z = minz; z <= maxz + resol; z += resol)
           {
-            double occupancy = result->getOccupancy();
-            octomap::point3d endpoint((float) x, (float) y, (float) z);
-            if (occupancy == probHit)
-              map->updateNode(endpoint, true);
-            else if (occupancy == probMiss)
-              map->updateNode(endpoint, false);
+            octomap::point3d query = octomap::point3d(x, y, z);
+            octomap::OcTreeNode* result = map->search(query);
+            if (result)
+            {
+              double occupancy = result->getOccupancy();
+              octomap::point3d endpoint((float) x, (float) y, (float) z);
+              if (occupancy == probHit)
+                map->updateNode(endpoint, true);
+              else if (occupancy == probMiss)
+                map->updateNode(endpoint, false);
+            }
           }
         }
       }
@@ -88,6 +90,48 @@ int main(int argc, char** argv )
   }
 
   std::cout << "======================================" << std::endl;
+
+  for (auto p: map2submaps)
+  {
+    std::string map_name = p.first;
+    std::vector< std::shared_ptr<octomap::OcTree> > submaps = p.second;
+    std::cout << "combining submaps into the map: " << map_name << std::endl;
+
+    std::shared_ptr<octomap::OcTree> map
+      = std::make_shared<octomap::OcTree>(resol);
+
+    for (auto m: submaps)
+    {
+      double minx, miny, minz;
+      m->getMetricMin(minx, miny, minz);
+      double maxx, maxy, maxz;
+      m->getMetricMax(maxx, maxy, maxz);
+
+      for (double x = minx; x <= maxx + resol; x += resol)
+      {
+        for (double y = miny; y <= maxx + resol; y += resol)
+        {
+          for (double z = minz; z <= maxz + resol; z += resol)
+          {
+            octomap::point3d query = octomap::point3d(x, y, z);
+            octomap::OcTreeNode* result = map->search(query);
+            if (result)
+            {
+              double occupancy = result->getOccupancy();
+              octomap::point3d endpoint((float) x, (float) y, (float) z);
+              if (occupancy == probHit)
+                map->updateNode(endpoint, true);
+              else if (occupancy == probMiss)
+                map->updateNode(endpoint, false);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  std::cout << "======================================" << std::endl;
+
   // octomap::OcTree *map;
   //
   // map = new octomap::OcTree(0.1);
