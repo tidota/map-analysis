@@ -3,14 +3,21 @@ ground_truth:
 
 maps:
   - default
-  - mymethod
+  # - mymethod
 
 default:
-  - default_map1.bt
-  - default_map2.bt
+  - octomap-robot1-000-210325_140225.bt
+  - octomap-robot1-001-210325_140225.bt
+  - octomap-robot1-002-210325_140225.bt
+  - octomap-robot1-003-210325_140225.bt
+  - octomap-robot1-004-210325_140225.bt
+  - octomap-robot1-005-210325_140225.bt
+  - octomap-robot1-006-210325_140225.bt
+  - octomap-robot1-007-210325_140225.bt
+  - octomap-robot1-008-210325_140225.bt
+  - octomap-robot1-009-210325_140225.bt
 
 mymethod:
   - mymethod_map1.bt
   - mymethod_map2.bt
   - mymethod_map3.bt
-    
