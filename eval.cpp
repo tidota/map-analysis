@@ -8,6 +8,10 @@
 #include <octomap/octomap.h>
 #include <octomap/OcTree.h>
 
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+
+// =============================================================================
 void insert_submap(
   const std::shared_ptr<octomap::OcTree>& submap,
   std::shared_ptr<octomap::OcTree>& dest_map)
@@ -42,6 +46,7 @@ void insert_submap(
   }
 }
 
+// =============================================================================
 void eval_map(
   const std::shared_ptr<octomap::OcTree>& map2eval,
   const std::shared_ptr<octomap::OcTree>& map_gt)
@@ -114,6 +119,61 @@ void eval_map(
   }
 }
 
+// =============================================================================
+void saveAsPCD(
+  const std::shared_ptr<octomap::OcTree>& map2save,
+  const std::string& file_name)
+{
+  double probHit = map2save->getProbHit();
+  double probMiss = map2save->getProbMiss();
+  double resol = map2save->getResolution();
+  double minx, miny, minz;
+  map2save->getMetricMin(minx, miny, minz);
+  double maxx, maxy, maxz;
+  map2save->getMetricMax(maxx, maxy, maxz);
+
+  std::vector< std::tuple<double, double, double> > point_list;
+
+  for (double x = minx - resol/2.0; x <= maxx + resol; x += resol)
+  {
+    for (double y = miny - resol/2.0; y <= maxy + resol; y += resol)
+    {
+      for (double z = minz - resol/2.0; z <= maxz + resol; z += resol)
+      {
+        octomap::point3d query = octomap::point3d(x, y, z);
+        octomap::OcTreeNode* res2check = map2save->search(query);
+        if (res2check)
+        {
+          double occ2check = res2check->getOccupancy();
+          if (occ2check >= probHit)
+          {
+            // add a point
+            auto p = std::make_tuple(x, y, z);
+            point_list.push_back(p);
+          }
+        }
+      }
+    }
+  }
+
+  pcl::PointCloud<pcl::PointXYZ> cloud;
+  cloud.width    = point_list.size();
+  cloud.height   = 1;
+  cloud.is_dense = false;
+  cloud.points.resize (cloud.width * cloud.height);
+
+  for (unsigned int i = 0; i < point_list.size(); ++i)
+  {
+    auto p = point_list[i];
+    cloud.points[i].x = std::get<0>(p);
+    cloud.points[i].y = std::get<1>(p);
+    cloud.points[i].z = std::get<2>(p);
+  }
+
+  pcl::io::savePCDFileASCII (file_name, cloud);
+}
+
+// =============================================================================
 int main(int argc, char** argv )
 {
   std::ifstream fin("settings.yaml");
@@ -166,12 +226,18 @@ int main(int argc, char** argv )
       insert_submap(m, map_gt);
     }
     std::cout << " done" << std::endl;
+
     std::cout << "compressing..." << std::flush;
     map_gt->toMaxLikelihood();
     map_gt->prune();
     std::cout << " done" << std::endl;
+
     std::cout << "saving the map..." << std::flush;
     map_gt->writeBinary("ground_truth_combined.bt");
+    std::cout << " done" << std::endl;
+
+    std::cout << "saving the map as point clouds..." << std::flush;
+    saveAsPCD(map_gt, "ground_truth_combined.pcd");
     std::cout << " done" << std::endl;
   }
 
@@ -189,6 +255,7 @@ int main(int argc, char** argv )
     map->setProbMiss(probMiss);
     map->setClampingThresMin(0.12);
     map->setClampingThresMax(0.97);
+
     std::cout << "combining submaps into the map: " << map_name << std::endl;
     for (auto m: submaps)
     {
@@ -196,14 +263,21 @@ int main(int argc, char** argv )
       insert_submap(m, map);
     }
     std::cout << " done" << std::endl;
+
     std::cout << "compressing..." << std::flush;
     map->toMaxLikelihood();
     map->prune();
     std::cout << " done" << std::endl;
+
     std::cout << "evaluating..." << std::endl;
     eval_map(map, map_gt);
+
     std::cout << "saving the map..." << std::flush;
     map->writeBinary(map_name + "_combined.bt");
+    std::cout << " done" << std::endl;
+
+    std::cout << "saving the map as point clouds..." << std::flush;
+    saveAsPCD(map, map_name + "_combined.pcd");
     std::cout << " done" << std::endl;
   }
 
