@@ -2,22 +2,42 @@ ground_truth:
   - file_gt.bt
 
 maps:
-  - default
-  # - mymethod
+  - single
+  - multi_naive
+  - multi_reduct
+  - trans_naive
+  - trans_reduct
 
-default:
-  - octomap-robot1-000-210325_140225.bt
-  - octomap-robot1-001-210325_140225.bt
-  - octomap-robot1-002-210325_140225.bt
-  - octomap-robot1-003-210325_140225.bt
-  - octomap-robot1-004-210325_140225.bt
-  - octomap-robot1-005-210325_140225.bt
-  - octomap-robot1-006-210325_140225.bt
-  - octomap-robot1-007-210325_140225.bt
-  - octomap-robot1-008-210325_140225.bt
-  - octomap-robot1-009-210325_140225.bt
+single:
+  - exp1006-0157-single/octomap-robot1-000-211006_015803.bt
 
-mymethod:
-  - mymethod_map1.bt
-  - mymethod_map2.bt
-  - mymethod_map3.bt
+multi_naive:
+  - exp1006-2338/octomap-robot1-000-211006_233942.bt
+
+multi_reduct:
+  - exp1002-2350-reduct-omg0.6/octomap-robot1-000-211002_235120.bt
+
+trans_naive:
+  - exp1003-0317-trans/octomap-robot1-006-211003_031826.bt
+  - exp1003-0317-trans/octomap-robot3-005-211003_031826.bt
+  - exp1003-0317-trans/octomap-robot5-003-211003_031826.bt
+  - exp1003-0317-trans/octomap-robot5-004-211003_031826.bt
+  - exp1003-0317-trans/octomap-robot5-005-211003_031826.bt
+  - exp1003-0317-trans/octomap-robot7-002-211003_031826.bt
+  - exp1003-0317-trans/octomap-robot9-000-211003_031826.bt
+  - exp1003-0317-trans/octomap-robot9-001-211003_031826.bt
+  - exp1003-0317-trans/octomap-robot9-002-211003_031826.bt
+
+trans_reduct:
+  - exp1006-2006-trans-reduct-omg0.6/octomap-robot1-005-211006_195637.bt
+  - exp1006-2006-trans-reduct-omg0.6/octomap-robot1-006-211006_195637.bt
+  - exp1006-2006-trans-reduct-omg0.6/octomap-robot3-006-211006_195637.bt
+  - exp1006-2006-trans-reduct-omg0.6/octomap-robot5-004-211006_195637.bt
+  - exp1006-2006-trans-reduct-omg0.6/octomap-robot5-005-211006_195638.bt
+  - exp1006-2006-trans-reduct-omg0.6/octomap-robot5-006-211006_195638.bt
+  - exp1006-2006-trans-reduct-omg0.6/octomap-robot7-001-211006_195638.bt
+  - exp1006-2006-trans-reduct-omg0.6/octomap-robot7-002-211006_195638.bt
+  - exp1006-2006-trans-reduct-omg0.6/octomap-robot7-003-211006_195638.bt
+  - exp1006-2006-trans-reduct-omg0.6/octomap-robot9-000-211006_195638.bt
+  - exp1006-2006-trans-reduct-omg0.6/octomap-robot9-001-211006_195638.bt
+
